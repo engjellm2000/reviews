@@ -84,7 +84,7 @@ pipeline {
 
     stage("Create New Pods") {
       steps {
-         withKubeCredentials(kubectlCredentials: [[ caCertificate: '', clusterName: 'minikube', contextName: 'minikube', credentialsId: 'jenkins-k8s-token', namespace: '', serverUrl: 'https://172.22.18.25:8443'
+         withKubeCredentials(kubectlCredentials: [[clusterName: 'minikube', contextName: 'minikube', namespace: 'production', serverUrl: 'https://172.22.18.25:8443'
         ]])
         {
           script {
