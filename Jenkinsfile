@@ -3,9 +3,7 @@ def serviceName = "reviews"
 def service = "Reviews"
 def m1 = System.currentTimeMillis()
 
-
 def groovyMethods
-
 
 pipeline {
   agent {
@@ -19,7 +17,7 @@ pipeline {
 
   environment {
     DOCKER_CREDENTIALS = credentials("dockerhub")
-    IMAGE_NAME = "engjellm2000" + "/" + "reviews"
+    IMAGE_NAME = "engjellm2000/reviews"
     IMAGE_TAG = "stable-${BUILD_NUMBER}"
   }
 
@@ -34,7 +32,6 @@ pipeline {
       steps {
         sh "[ -d pipeline ] || mkdir pipeline"
         dir("pipeline") {
-          // Add your jenkins automation url to url field
           git branch: 'main', credentialsId: 'github', url: 'https://github.com/engjellm2000/jenkins'
           script {
             groovyMethods = load("functions.groovy")
@@ -47,47 +44,60 @@ pipeline {
       }
     }
 
-    // stage("Lint Check") {
-    //   steps {
-    //     sh 'npm run lint:check'
-    //   }
-    // }
+    /*
+    stage("Lint Check") {
+      steps {
+        sh 'npm run lint:check'
+      }
+    }
 
-    // stage("Code Format Check") {
-    //   steps {
-    //     sh 'npm run prettier:check'
-    //   }
-    // }
+    stage("Code Format Check") {
+      steps {
+        sh 'npm run prettier:check'
+      }
+    }
 
-    // stage("Unit Test") {
-    //   steps {
-    //     sh 'npm run test'
-    //   }
-    // }
+    stage("Unit Test") {
+      steps {
+        sh 'npm run test'
+      }
+    }
+    */
 
     stage("Build and Push") {
       steps {
-        sh 'docker login -u $DOCKERHUB_CREDENTIAL_USR --password $DOCKERHUB_CREDENTIALS_PSW'
-        sh "docker build -t $IMAGE_NAME ."
-        sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
-        sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
-        sh "docker push $IMAGE_NAME:$IMAGE_TAG"
-        sh "docker push $IMAGE_NAME:stable"
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub',
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+        )]) {
+          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+          sh "docker build -t $IMAGE_NAME ."
+          sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
+          sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
+          sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+          sh "docker push $IMAGE_NAME:stable"
+        }
       }
     }
 
     stage("Clean Artifacts") {
       steps {
-        sh "docker rmi $IMAGE_NAME:$IMAGE_TAG"
-        sh "docker rmi $IMAGE_NAME:stable"
+        sh "docker rmi $IMAGE_NAME:$IMAGE_TAG || true"
+        sh "docker rmi $IMAGE_NAME:stable || true"
       }
     }
 
     stage("Create New Pods") {
       steps {
-         withKubeCredentials(kubectlCredentials: [[ caCertificate: '', clusterName: 'minikube', contextName: 'minikube', credentialsId: 'jenkins-k8s-token', namespace: 'production', serverUrl: 'https://172.22.18.25:8443'
-        ]])
-        {
+        withKubeCredentials(kubectlCredentials: [[
+          caCertificate: '',
+          clusterName: 'minikube',
+          contextName: 'minikube',
+          credentialsId: 'jenkins-k8s-token',
+          namespace: 'production',
+          serverUrl: 'https://172.22.18.25:8443'
+        ]]) {
           script {
             def pods = groovyMethods.findPodsFromName("${namespace}", "${serviceName}")
             echo "Found pods: ${pods}"
@@ -97,8 +107,8 @@ pipeline {
                   kubectl delete -n ${namespace} pod ${podName}
                   sleep 10s
                 """
-                }
-              } else {
+              }
+            } else {
               echo "No pods found for deletion in namespace '${namespace}' with app=${serviceName}"
             }
           }
@@ -106,63 +116,59 @@ pipeline {
       }
     }
   }
+
   post {
     success {
       script {
         def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
-        groovyMethods.notifySlack("", "jenkins", [
-        				[
-        					title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
-        					title_link: "${env.BUILD_URL}",
-        					color: "good",
-        					text: "Created by: ${author}",
-        					"mrkdwn_in": ["fields"],
-        					fields: [
-        						[
-        							title: "Duration Time",
-        							value: "${durTime}",
-        							short: true
-        						],
-        						[
-        							title: "Stage Name",
-        							value: "Production",
-        							short: true
-        						],
-        					]
-        				]
-        		]
-        )
+        groovyMethods.notifySlack("", "jenkins", [[
+          title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
+          title_link: "${env.BUILD_URL}",
+          color: "good",
+          text: "Created by: ${author}",
+          "mrkdwn_in": ["fields"],
+          fields: [
+            [
+              title: "Duration Time",
+              value: "${durTime}",
+              short: true
+            ],
+            [
+              title: "Stage Name",
+              value: "Production",
+              short: true
+            ]
+          ]
+        ]])
       }
     }
+
     failure {
       script {
         def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
-        groovyMethods.notifySlack("", "jenkins", [
-        				[
-        					title: "BUILD FAILED: ${service} Service with build number ${env.BUILD_NUMBER}",
-        					title_link: "${env.BUILD_URL}",
-        					color: "error",
-        					text: "Created by: ${author}",
-        					"mrkdwn_in": ["fields"],
-        					fields: [
-        						[
-        							title: "Duration Time",
-        							value: "${durTime}",
-        							short: true
-        						],
-        						[
-        							title: "Stage Name",
-        							value: "Production",
-        							short: true
-        						],
-        					]
-        				]
-        		]
-        )
+        groovyMethods.notifySlack("", "jenkins", [[
+          title: "BUILD FAILED: ${service} Service with build number ${env.BUILD_NUMBER}",
+          title_link: "${env.BUILD_URL}",
+          color: "error",
+          text: "Created by: ${author}",
+          "mrkdwn_in": ["fields"],
+          fields: [
+            [
+              title: "Duration Time",
+              value: "${durTime}",
+              short: true
+            ],
+            [
+              title: "Stage Name",
+              value: "Production",
+              short: true
+            ]
+          ]
+        ]])
       }
     }
   }
