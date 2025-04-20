@@ -66,7 +66,7 @@ pipeline {
 
     stage("Build and Push") {
       steps {
-        sh 'docker login -u $DOCKERHUB_CREDENTIAL_USR --password $DOCKERHUB_CREDENTIALS_PSW'
+        sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
         sh "docker build -t $IMAGE_NAME ."
         sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
         sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
