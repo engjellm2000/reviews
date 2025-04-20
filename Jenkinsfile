@@ -34,7 +34,7 @@ pipeline {
         sh "[ -d pipeline ] || mkdir pipeline"
         dir("pipeline") {
           // Add your jenkins automation url to url field
-          git branch: 'main', credentialsId: 'github', url: 'https://github.com/EngjellMustafa/jenkins'
+          git branch: 'main', credentialsId: 'github', url: 'https://github.com/engjellm2000/jenkins'
           script {
             groovyMethods = load("functions.groovy")
           }
