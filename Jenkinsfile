@@ -38,6 +38,7 @@ pipeline {
           git branch: 'main', credentialsId: 'github', url: 'https://github.com/engjellm2000/jenkins'
           script {
             groovyMethods = load("functions.groovy")
+            echo "groovyMethods loaded? => ${groovyMethods != null}"
           }
         }
 
@@ -66,7 +67,7 @@ pipeline {
 
     stage("Build and Push") {
       steps {
-        sh 'echo $DOCKER_CREDENTIALS_PSW | docker login -u $DOCKER_CREDENTIALS_USR --password-stdin'
+        sh 'docker login -u $DOCKERHUB_CREDENTIAL_USR --password $DOCKERHUB_CREDENTIALS_PSW'
         sh "docker build -t $IMAGE_NAME ."
         sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
         sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
@@ -84,16 +85,21 @@ pipeline {
 
     stage("Create New Pods") {
       steps {
-         withKubeCredentials(kubectlCredentials: [[ caCertificate: '', clusterName: 'minikube', contextName: 'minikube', credentialsId: 'jenkins-k8s-token', namespace: '', serverUrl: 'https://172.22.18.25:8443'
+         withKubeCredentials(kubectlCredentials: [[ caCertificate: '', clusterName: 'minikube', contextName: 'minikube', credentialsId: 'jenkins-k8s-token', namespace: 'production', serverUrl: 'https://172.22.18.25:8443'
         ]])
         {
           script {
             def pods = groovyMethods.findPodsFromName("${namespace}", "${serviceName}")
-            for (podName in pods) {
-              sh """
-                kubectl delete -n ${namespace} pod ${podName}
-                sleep 10s
-              """
+            echo "Found pods: ${pods}"
+            if (pods && pods.size() > 0) {
+              for (podName in pods) {
+                sh """
+                  kubectl delete -n ${namespace} pod ${podName}
+                  sleep 10s
+                """
+                }
+              } else {
+              echo "No pods found for deletion in namespace '${namespace}' with app=${serviceName}"
             }
           }
         }
