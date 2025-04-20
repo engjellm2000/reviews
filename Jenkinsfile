@@ -1,10 +1,11 @@
-namespace = "production"
-serviceName = "reviews"
-service = "Reviews"
+def namespace = "production"
+def serviceName = "reviews"
+def service = "Reviews"
+def m1 = System.currentTimeMillis()
+
 
 def groovyMethods
 
-m1 = System.currentTimeMillis()
 
 pipeline {
   agent {
@@ -102,7 +103,7 @@ pipeline {
   post {
     success {
       script {
-        m2 = System.currentTimeMillis()
+        def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
         groovyMethods.notifySlack("", "jenkins", [
@@ -131,7 +132,7 @@ pipeline {
     }
     failure {
       script {
-        m2 = System.currentTimeMillis()
+        def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
         groovyMethods.notifySlack("", "jenkins", [
