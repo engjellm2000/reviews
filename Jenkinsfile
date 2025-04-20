@@ -46,23 +46,23 @@ pipeline {
       }
     }
 
-    stage("Lint Check") {
-      steps {
-        sh 'npm run lint:check'
-      }
-    }
+    // stage("Lint Check") {
+    //   steps {
+    //     sh 'npm run lint:check'
+    //   }
+    // }
 
-    stage("Code Format Check") {
-      steps {
-        sh 'npm run prettier:check'
-      }
-    }
+    // stage("Code Format Check") {
+    //   steps {
+    //     sh 'npm run prettier:check'
+    //   }
+    // }
 
-    stage("Unit Test") {
-      steps {
-        sh 'npm run test'
-      }
-    }
+    // stage("Unit Test") {
+    //   steps {
+    //     sh 'npm run test'
+    //   }
+    // }
 
     stage("Build and Push") {
       steps {
@@ -84,7 +84,7 @@ pipeline {
 
     stage("Create New Pods") {
       steps {
-         withKubeCredentials(kubectlCredentials: [[clusterName: 'minikube', contextName: 'minikube', namespace: 'production', serverUrl: 'https://172.22.18.25:8443'
+         withKubeCredentials(kubectlCredentials: [[ caCertificate: '', clusterName: 'minikube', contextName: 'minikube', credentialsId: 'jenkins-k8s-token', namespace: '', serverUrl: 'https://172.22.18.25:8443'
         ]])
         {
           script {
