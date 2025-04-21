@@ -71,7 +71,7 @@ pipeline {
           usernameVariable: 'DOCKER_USER',
           passwordVariable: 'DOCKER_PASS'
       )]) {
-      sh '''echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'''
+      sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
       sh "docker build -t $IMAGE_NAME ."
       sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
       sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
