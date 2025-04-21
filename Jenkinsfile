@@ -44,7 +44,7 @@ pipeline {
       }
     }
 
-    
+    // Uncomment these if needed
     // stage("Lint Check") {
     //   steps {
     //     sh 'npm run lint:check'
@@ -63,22 +63,21 @@ pipeline {
     //   }
     // }
 
-
     stage("Build and Push") {
       steps {
         withCredentials([usernamePassword(
-          credentialsId: 'dockerhub',   // ✅ Your Jenkins credential ID
+          credentialsId: 'dockerhub',
           usernameVariable: 'DOCKER_USER',
           passwordVariable: 'DOCKER_PASS'
-      )]) {
-      sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
-      sh "docker build -t $IMAGE_NAME ."
-      sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
-      sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
-      sh "docker push $IMAGE_NAME:$IMAGE_TAG"
-      sh "docker push $IMAGE_NAME:stable"
+        )]) {
+          sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+          sh "docker build -t $IMAGE_NAME ."
+          sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
+          sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
+          sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+          sh "docker push $IMAGE_NAME:stable"
+        }
       }
-    }
     }
 
     stage("Clean Artifacts") {
@@ -124,25 +123,26 @@ pipeline {
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
         withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_URL')]) {
-        groovyMethods.notifySlack("${SLACK_URL}", "jenkins", [[
-          title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
-          title_link: "${env.BUILD_URL}",
-          color: "good",
-          text: "Created by: ${author}",
-          mrkdwn_in: ["fields"],
-          fields: [
-            [
-              title: "Duration Time",
-              value: "${durTime}",
-              short: true
-            ],
-            [
-              title: "Stage Name",
-              value: "Production",
-              short: true
+          groovyMethods.notifySlack("${SLACK_URL}", "jenkins", [[
+            title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
+            title_link: "${env.BUILD_URL}",
+            color: "good",
+            text: "Created by: ${author}",
+            mrkdwn_in: ["fields"],
+            fields: [
+              [
+                title: "Duration Time",
+                value: "${durTime}",
+                short: true
+              ],
+              [
+                title: "Stage Name",
+                value: "Production",
+                short: true
+              ]
             ]
-          ]
-        ]])
+          ]])
+        }
       }
     }
 
@@ -152,25 +152,26 @@ pipeline {
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
         withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_URL')]) {
-        groovyMethods.notifySlack("${SLACK_URL}", "jenkins", [[
-          title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
-          title_link: "${env.BUILD_URL}",
-          color: "good",
-          text: "Created by: ${author}",
-          mrkdwn_in: ["fields"],
-          fields: [
-            [
-              title: "Duration Time",
-              value: "${durTime}",
-              short: true
-            ],
-            [
-              title: "Stage Name",
-              value: "Production",
-              short: true
+          groovyMethods.notifySlack("${SLACK_URL}", "jenkins", [[
+            title: "BUILD FAILED: ${service} Service with build number ${env.BUILD_NUMBER}",
+            title_link: "${env.BUILD_URL}",
+            color: "danger",
+            text: "Created by: ${author}",
+            mrkdwn_in: ["fields"],
+            fields: [
+              [
+                title: "Duration Time",
+                value: "${durTime}",
+                short: true
+              ],
+              [
+                title: "Stage Name",
+                value: "Production",
+                short: true
+              ]
             ]
-          ]
-        ]])
+          ]])
+        }
       }
     }
   }
