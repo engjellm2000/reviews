@@ -123,12 +123,13 @@ pipeline {
         def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
-        groovyMethods.notifySlack("https://hooks.slack.com/services/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", "jenkins", [[
+        withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_URL')]) {
+        groovyMethods.notifySlack("${SLACK_URL}", "jenkins", [[
           title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
           title_link: "${env.BUILD_URL}",
           color: "good",
           text: "Created by: ${author}",
-          "mrkdwn_in": ["fields"],
+          mrkdwn_in: ["fields"],
           fields: [
             [
               title: "Duration Time",
@@ -150,12 +151,13 @@ pipeline {
         def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
-        groovyMethods.notifySlack("https://hooks.slack.com/services/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", "jenkins", [[
-          title: "BUILD FAILED: ${service} Service with build number ${env.BUILD_NUMBER}",
+        withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_URL')]) {
+        groovyMethods.notifySlack("${SLACK_URL}", "jenkins", [[
+          title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
           title_link: "${env.BUILD_URL}",
-          color: "error",
+          color: "good",
           text: "Created by: ${author}",
-          "mrkdwn_in": ["fields"],
+          mrkdwn_in: ["fields"],
           fields: [
             [
               title: "Duration Time",
