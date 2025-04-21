@@ -44,25 +44,6 @@ pipeline {
       }
     }
 
-    // Optional checks
-    // stage("Lint Check") {
-    //   steps {
-    //     sh 'npm run lint:check'
-    //   }
-    // }
-
-    // stage("Code Format Check") {
-    //   steps {
-    //     sh 'npm run prettier:check'
-    //   }
-    // }
-
-    // stage("Unit Test") {
-    //   steps {
-    //     sh 'npm run test'
-    //   }
-    // }
-
     stage("Build and Push") {
       steps {
         withCredentials([usernamePassword(
@@ -122,27 +103,16 @@ pipeline {
         def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
-        withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_URL')]) {
-          groovyMethods.notifySlack(env.SLACK_URL, "jenkins", [[
-            title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
-            title_link: "${env.BUILD_URL}",
-            color: "good",
-            text: "Created by: ${author}",
-            mrkdwn_in: ["fields"],
-            fields: [
-              [
-                title: "Duration Time",
-                value: "${durTime}",
-                short: true
-              ],
-              [
-                title: "Stage Name",
-                value: "Production",
-                short: true
-              ]
-            ]
-          ]])
-        }
+        slackSend(
+          channel: '#jenkins-automation',
+          color: 'good',
+          message: """✅ *BUILD SUCCEEDED*
+            *Service:* ${service}
+            *Build:* #${env.BUILD_NUMBER}
+            *Duration:* ${durTime}
+            *Author:* ${author}
+            <${env.BUILD_URL}|View Build>"""
+        )
       }
     }
 
@@ -151,27 +121,16 @@ pipeline {
         def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
-        withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_URL')]) {
-          groovyMethods.notifySlack(env.SLACK_URL, "jenkins", [[
-            title: "BUILD FAILED: ${service} Service with build number ${env.BUILD_NUMBER}",
-            title_link: "${env.BUILD_URL}",
-            color: "danger",
-            text: "Created by: ${author}",
-            mrkdwn_in: ["fields"],
-            fields: [
-              [
-                title: "Duration Time",
-                value: "${durTime}",
-                short: true
-              ],
-              [
-                title: "Stage Name",
-                value: "Production",
-                short: true
-              ]
-            ]
-          ]])
-        }
+        slackSend(
+          channel: '#jenkins-automation',
+          color: 'danger',
+          message: """❌ *BUILD FAILED*
+            *Service:* ${service}
+            *Build:* #${env.BUILD_NUMBER}
+            *Duration:* ${durTime}
+            *Author:* ${author}
+            <${env.BUILD_URL}|View Build>"""
+        )
       }
     }
   }
