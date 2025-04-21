@@ -44,7 +44,7 @@ pipeline {
       }
     }
 
-    /*
+    
     stage("Lint Check") {
       steps {
         sh 'npm run lint:check'
@@ -62,7 +62,7 @@ pipeline {
         sh 'npm run test'
       }
     }
-    */
+
 
     stage("Build and Push") {
       steps {
@@ -77,8 +77,8 @@ pipeline {
       sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
       sh "docker push $IMAGE_NAME:$IMAGE_TAG"
       sh "docker push $IMAGE_NAME:stable"
+      }
     }
-  }
     }
 
     stage("Clean Artifacts") {
@@ -91,26 +91,7 @@ pipeline {
     stage("Create New Pods") {
       steps {
         withKubeCredentials(kubectlCredentials: [[
-          caCertificate: '''-----BEGIN CERTIFICATE-----
-            MIIDBjCCAe6gAwIBAgIBATANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
-            a3ViZUNBMB4XDTI1MDQwMjE4NDYwNloXDTM1MDQwMTE4NDYwNlowFTETMBEGA1UE
-            AxMKbWluaWt1YmVDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALAi
-            z83a9nbRm5bjfx2bEw6cTDdh8z/XWmSSo2FuTdQOSSu3YG42x2wu9oqoBGTr3lkY
-            qlbzecThTygsC9mLO1R8QWawBQOWI89CHA5zydm2Gysa2WT82ZAXUyuP322LoKyO
-            NEzbZnXb+xPbLDHqKxcSpjNI2E6/99dzTeEpwetsNFVdcIYHSwB9f+5ICed9LMgP
-            byA9Y2tcj27zCKS5wWYErWwmJGZ0aOrIdK2AgFhrUutx1Q/6toXXegMajJxJ1ghd
-            M2m7pHLZqYHrBQHreTLb9ywlkJDQTc4aw4GRjfE600tdljaLI6I6gjzq5vwLdtgo
-            6LB47t/GLX+7DC7vsPUCAwEAAaNhMF8wDgYDVR0PAQH/BAQDAgKkMB0GA1UdJQQW
-            MBQGCCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQW
-            BBQLKoTFoe5dfS2RLf4qqqB5BlxBmDANBgkqhkiG9w0BAQsFAAOCAQEAW8zK264z
-            YEVPy+s90TWeUyutqPfaqe4V/z9eZEBz5e5s05ZsDsCOzM2rxMiDowrD0XlDdCpm
-            btnrQWRPdHBUJZD3ysqHkTU6LDmFYAauBjitawFe0lGwPrfGsk7BIaLsmtrP3cxl
-            nuTHWOeF269ZcjoTrB0yjHdcFOM2cet4eSqrtpOy+KDGiZlZ49QIZPQpAwazi1oy
-            UKM4+1pr39n1MZox+XU+md493vPcyJlzU04HPbcO0w8rIdwsWZiol/RonM8Ul1H5
-            HePUlrysilE9FM4edeKzqslx5Ng5tsWMmWGH6CF+UU91jVQhQHGzIO6jNDVFk6Cf
-            5y9aYbkFXAmluA==
-            -----END CERTIFICATE-----
-          ''',
+          caCertificate: '',
           clusterName: 'minikube',
           contextName: 'minikube',
           credentialsId: 'jenkins-k8s-token',
@@ -142,7 +123,7 @@ pipeline {
         def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
-        groovyMethods.notifySlack("", "jenkins", [[
+        groovyMethods.notifySlack("https://hooks.slack.com/services/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", "jenkins", [[
           title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
           title_link: "${env.BUILD_URL}",
           color: "good",
@@ -169,7 +150,7 @@ pipeline {
         def m2 = System.currentTimeMillis()
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
-        groovyMethods.notifySlack("", "jenkins", [[
+        groovyMethods.notifySlack("https://hooks.slack.com/services/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", "jenkins", [[
           title: "BUILD FAILED: ${service} Service with build number ${env.BUILD_NUMBER}",
           title_link: "${env.BUILD_URL}",
           color: "error",
