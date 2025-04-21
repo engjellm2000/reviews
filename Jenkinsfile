@@ -44,7 +44,7 @@ pipeline {
       }
     }
 
-    // Uncomment these if needed
+    // Optional checks
     // stage("Lint Check") {
     //   steps {
     //     sh 'npm run lint:check'
@@ -123,7 +123,7 @@ pipeline {
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
         withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_URL')]) {
-          groovyMethods.notifySlack("${SLACK_URL}", "jenkins", [[
+          groovyMethods.notifySlack(env.SLACK_URL, "jenkins", [[
             title: "BUILD SUCCEEDED: ${service} Service with build number ${env.BUILD_NUMBER}",
             title_link: "${env.BUILD_URL}",
             color: "good",
@@ -152,7 +152,7 @@ pipeline {
         def durTime = groovyMethods.durationTime(m1, m2)
         def author = groovyMethods.readCommitAuthor()
         withCredentials([string(credentialsId: 'SLACK_WEBHOOK_URL', variable: 'SLACK_URL')]) {
-          groovyMethods.notifySlack("${SLACK_URL}", "jenkins", [[
+          groovyMethods.notifySlack(env.SLACK_URL, "jenkins", [[
             title: "BUILD FAILED: ${service} Service with build number ${env.BUILD_NUMBER}",
             title_link: "${env.BUILD_URL}",
             color: "danger",
