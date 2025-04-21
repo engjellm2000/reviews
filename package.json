@@ -20,7 +20,7 @@
   "license": "ISC",
   "dependencies": {
     "@elastic/elasticsearch": "^8.15.1",
-    "@engjellm2000/lib": "github:engjellm2000/lib",
+    "@engjellm2000/lib": "^0.0.3",
     "amqplib": "^0.10.4",
     "compression": "^1.7.5",
     "cors": "^2.8.5",
