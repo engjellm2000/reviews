@@ -85,7 +85,7 @@ pipeline {
     stage("Create New Pods") {
       steps {
         withKubeCredentials(kubectlCredentials: [[
-          caCertificate: '-----BEGIN CERTIFICATE-----
+          caCertificate: '''-----BEGIN CERTIFICATE-----
             MIIDBjCCAe6gAwIBAgIBATANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
             a3ViZUNBMB4XDTI1MDQwMjE4NDYwNloXDTM1MDQwMTE4NDYwNlowFTETMBEGA1UE
             AxMKbWluaWt1YmVDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALAi
@@ -104,7 +104,7 @@ pipeline {
             HePUlrysilE9FM4edeKzqslx5Ng5tsWMmWGH6CF+UU91jVQhQHGzIO6jNDVFk6Cf
             5y9aYbkFXAmluA==
             -----END CERTIFICATE-----
-          ',
+          ''',
           clusterName: 'minikube',
           contextName: 'minikube',
           credentialsId: 'jenkins-k8s-token',
