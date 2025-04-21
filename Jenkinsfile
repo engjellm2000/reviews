@@ -66,18 +66,12 @@ pipeline {
 
     stage("Build and Push") {
       steps {
-        withCredentials([usernamePassword(
-          credentialsId: 'dockerhub',
-          usernameVariable: 'DOCKER_USER',
-          passwordVariable: 'DOCKER_PASS'
-        )]) {
-          sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
-          sh "docker build -t $IMAGE_NAME ."
-          sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
-          sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
-          sh "docker push $IMAGE_NAME:$IMAGE_TAG"
-          sh "docker push $IMAGE_NAME:stable"
-        }
+        sh 'docker login -u $DOCKERHUB_CREDENTIAL_USR --password $DOCKERHUB_CREDENTIALS_PSW'
+        sh "docker build -t $IMAGE_NAME ."
+        sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
+        sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
+        sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+        sh "docker push $IMAGE_NAME:stable"
       }
     }
 
@@ -91,11 +85,30 @@ pipeline {
     stage("Create New Pods") {
       steps {
         withKubeCredentials(kubectlCredentials: [[
-          caCertificate: '',
+          caCertificate: '-----BEGIN CERTIFICATE-----
+            MIIDBjCCAe6gAwIBAgIBATANBgkqhkiG9w0BAQsFADAVMRMwEQYDVQQDEwptaW5p
+            a3ViZUNBMB4XDTI1MDQwMjE4NDYwNloXDTM1MDQwMTE4NDYwNlowFTETMBEGA1UE
+            AxMKbWluaWt1YmVDQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALAi
+            z83a9nbRm5bjfx2bEw6cTDdh8z/XWmSSo2FuTdQOSSu3YG42x2wu9oqoBGTr3lkY
+            qlbzecThTygsC9mLO1R8QWawBQOWI89CHA5zydm2Gysa2WT82ZAXUyuP322LoKyO
+            NEzbZnXb+xPbLDHqKxcSpjNI2E6/99dzTeEpwetsNFVdcIYHSwB9f+5ICed9LMgP
+            byA9Y2tcj27zCKS5wWYErWwmJGZ0aOrIdK2AgFhrUutx1Q/6toXXegMajJxJ1ghd
+            M2m7pHLZqYHrBQHreTLb9ywlkJDQTc4aw4GRjfE600tdljaLI6I6gjzq5vwLdtgo
+            6LB47t/GLX+7DC7vsPUCAwEAAaNhMF8wDgYDVR0PAQH/BAQDAgKkMB0GA1UdJQQW
+            MBQGCCsGAQUFBwMCBggrBgEFBQcDATAPBgNVHRMBAf8EBTADAQH/MB0GA1UdDgQW
+            BBQLKoTFoe5dfS2RLf4qqqB5BlxBmDANBgkqhkiG9w0BAQsFAAOCAQEAW8zK264z
+            YEVPy+s90TWeUyutqPfaqe4V/z9eZEBz5e5s05ZsDsCOzM2rxMiDowrD0XlDdCpm
+            btnrQWRPdHBUJZD3ysqHkTU6LDmFYAauBjitawFe0lGwPrfGsk7BIaLsmtrP3cxl
+            nuTHWOeF269ZcjoTrB0yjHdcFOM2cet4eSqrtpOy+KDGiZlZ49QIZPQpAwazi1oy
+            UKM4+1pr39n1MZox+XU+md493vPcyJlzU04HPbcO0w8rIdwsWZiol/RonM8Ul1H5
+            HePUlrysilE9FM4edeKzqslx5Ng5tsWMmWGH6CF+UU91jVQhQHGzIO6jNDVFk6Cf
+            5y9aYbkFXAmluA==
+            -----END CERTIFICATE-----
+          ',
           clusterName: 'minikube',
           contextName: 'minikube',
           credentialsId: 'jenkins-k8s-token',
-          namespace: 'production',
+          namespace: '',
           serverUrl: 'https://172.22.18.25:8443'
         ]]) {
           script {
