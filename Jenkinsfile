@@ -66,13 +66,19 @@ pipeline {
 
     stage("Build and Push") {
       steps {
-        sh 'docker login -u $DOCKERHUB_CREDENTIAL_USR --password $DOCKERHUB_CREDENTIALS_PSW'
-        sh "docker build -t $IMAGE_NAME ."
-        sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
-        sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
-        sh "docker push $IMAGE_NAME:$IMAGE_TAG"
-        sh "docker push $IMAGE_NAME:stable"
-      }
+        withCredentials([usernamePassword(
+          credentialsId: 'dockerhub',   // ✅ Your Jenkins credential ID
+          usernameVariable: 'DOCKER_USER',
+          passwordVariable: 'DOCKER_PASS'
+      )]) {
+      sh 'echo "${DOCKER_PASS}" | docker login --username "${DOCKER_USER}" --password-stdin'
+      sh "docker build -t $IMAGE_NAME ."
+      sh "docker tag $IMAGE_NAME $IMAGE_NAME:$IMAGE_TAG"
+      sh "docker tag $IMAGE_NAME $IMAGE_NAME:stable"
+      sh "docker push $IMAGE_NAME:$IMAGE_TAG"
+      sh "docker push $IMAGE_NAME:stable"
+    }
+  }
     }
 
     stage("Clean Artifacts") {
